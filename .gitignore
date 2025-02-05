@@ -1,0 +1,2 @@
+#ignore temporary files from visual studio
+.vs/
