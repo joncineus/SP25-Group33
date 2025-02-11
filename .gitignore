@@ -1,2 +1,11 @@
 #ignore temporary files from visual studio
 .vs/
+#ignore virtual enviorment when commiting
+venv/ 
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+*.pyo
+
+# Ignore SQLite database
+db.sqlite3 
