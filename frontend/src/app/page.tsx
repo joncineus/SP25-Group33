@@ -8,7 +8,7 @@ export default function Home() {
       
       {/* Button to go to Register Page */}
       <Link href="/register">
-        <button className="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-gray-700">
+        <button className="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
           Sign Up
         </button>
       </Link>
