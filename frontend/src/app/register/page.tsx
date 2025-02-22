@@ -6,6 +6,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import Link from "next/link";
+import { useRouter } from 'next/navigation'; // Import useRouter
+//import { AxiosError } from "axios";
+
 
 
 const registrationSchema = z.object({
@@ -29,17 +32,62 @@ const Register = () => {
   });
 
   const [message, setMessage] = useState("");
+  const router = useRouter(); //Initialize userRouter
 
   const onSubmit = async (data: RegistrationData) => {
-    try {
-      const response = await axios.post("https://your-api.com/register", data);
-      setMessage("Registration successful!");
-      console.log(response.data);
-    } catch (error) {
-      setMessage("Registration failed. Please try again.");
-      console.error(error);
-    }
-  };
+    console.log("Data being sent:", data);
+
+    const response = await axios.post("http://127.0.0.1:8000/auth/register/", data, {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  });
+
+  console.log("Response:", response.data);
+  setMessage("Registration successful!");
+
+  setTimeout(() => {
+      router.push('/login');
+  }, 3000);
+};
+
+//     try {
+//       const response = await axios.post("http://127.0.0.1:8000/auth/register/", data, {
+//           headers: {
+//               'Content-Type': 'application/json' // Make sure Content-Type is set
+//           }
+//       });
+
+//       console.log("Response:", response.data); // Log the successful response
+//       setMessage("Registration successful!");
+
+//       setTimeout(() => {
+//           router.push('/login');
+//       }, 3000);
+
+//   } catch (error: any) {
+//     console.error("Error:", error);
+
+//     if (axios.isAxiosError(error)) { // Correct usage
+//         const axiosError = error as AxiosError; // Type assertion (still needed)
+//         if (axiosError.response && axiosError.response.data) {
+//             console.error("Backend Error Details:", axiosError.response.data);
+//             setMessage(axiosError.response.data.message || "Registration failed.");
+//         } else if (axiosError.response) {
+//             console.error("Axios Error:", axiosError.response.status, axiosError.response.data);
+//             setMessage("Registration failed.");
+//         } else {
+//             console.error("Network Error:", axiosError.message);
+//             setMessage("A network error occurred.");
+//         }
+//     } else {
+//         console.error("Unexpected Error:", error);
+//         setMessage("An unexpected error occurred.");
+//     }
+// }
+
+// };
+
  
  
   return (
