@@ -4,11 +4,19 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode'; 
 
 type LoginData = {
   username: string;
   password: string;
 };
+
+type AuthResponse = {
+  role: string;
+  refresh: string;
+  access: string;
+}
 
 const Login = () => {
   const {
@@ -18,25 +26,39 @@ const Login = () => {
   } = useForm<LoginData>();
 
   const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const onSubmit = async (data: LoginData) => {
     try {
         //i am not sure if im usign the correct backend  api
-      const response = await axios.post("http://localhost:8000/auth/login/", data);
+      const response = await axios.post<AuthResponse>("http://localhost:8000/auth/login/", data);
       setMessage("Login successful!");
-      console.log(response.data);
+      console.log("Response Data:", response.data);
 
-      // Redirect user based on their role
-      if (response.data.role === "teacher") {
-        window.location.href = "/teacher-dashboard";
-      } else if (response.data.role === "student") {
-        window.location.href = "/student-dashboard";
-      }
-    } catch (error) {
-      setMessage("Invalid credentials. Please try again.");
-      console.error(error);
-    }
-  };
+      // Decode the access token to get the role
+      const decodedToken = jwtDecode<{ role: string }>(response.data.access);
+      console.log("Decoded Token:", decodedToken);
+
+      // Store the role in local storage
+      if (decodedToken.role) {
+        localStorage.setItem('userRole', decodedToken.role);
+        console.log("Stored Role:", decodedToken.role);
+
+        // Redirect user based on their role
+        if (decodedToken.role === "teacher") {
+          router.push("/teacher-dashboard");
+        } else if (decodedToken.role === "student") {
+          router.push("/student-dashboard");
+        }
+        } else {
+          setMessage("Role not found in token.");
+        }
+        } catch (error) {
+        setMessage("Invalid credentials. Please try again.");
+        console.error("Login Error:", error);
+        }
+        };
+
 
   return (
     <div className="max-w-md mx-auto mt-10">
