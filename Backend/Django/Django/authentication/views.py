@@ -36,10 +36,13 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
             access_token = refresh.access_token
 
+            access_token['role'] = user.role
+
             # Return the tokens as a response
             return Response({
                 "refresh": str(refresh),
-                "access": str(access_token)
+                "access": str(access_token),
+                "role": user.role
             }, status=status.HTTP_200_OK)
         
         # Return error if authentication fails
