@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useState } from "react";
-
+import { registerUser } from "./api/auth";
 const registrationSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
@@ -12,6 +12,7 @@ const registrationSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters"),
     role: z.enum(["teacher", "student"]),
 });
+
 
 type RegistrationData = z.infer<typeof registrationSchema>;
 
