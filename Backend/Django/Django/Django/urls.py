@@ -23,8 +23,8 @@ from authentication.views import LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('authentication.urls')),  # Include authentication app's URLs
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Add the refresh token route
+    path('', include('authentication.urls')),  # Include authentication app's URLs
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  
 
 
 ]
