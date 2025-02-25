@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from .serializers import UserRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from rest_framework import generics
+from rest_framework import generics, permissions
 from .models import Quiz
 from .serializers import QuizSerializer
 from .permissions import IsTeacher 
@@ -58,11 +58,11 @@ class QuizCreateView(generics.CreateAPIView):
     permission_classes = [IsTeacher]
 
     def create(self, request, *args, **kwargs):
-        print("Starting Quiz Create View")  # <--- Print statement 1
-        print("Request Data:", request.data)  # <--- Print statement 2
+        print("Starting Quiz Create View") 
+        print("Request Data:", request.data) 
 
         serializer = self.get_serializer(data=request.data)
-        print("Serializer Data:", serializer.initial_data) #<-- Print statement 3
+        print("Serializer Data:", serializer.initial_data) 
         serializer.is_valid(raise_exception=True)
 
         print("Validated Data (before due_date check):", serializer.validated_data) #<--- Print statement 4
@@ -70,20 +70,37 @@ class QuizCreateView(generics.CreateAPIView):
         if 'due_date' not in serializer.validated_data or not serializer.validated_data['due_date']:
             default_due_date = timezone.now() + timezone.timedelta(days=7)
             serializer.validated_data['due_date'] = default_due_date
-            print("Due Date not provided, setting default:", default_due_date) #<-- Print statement 5
+            print("Due Date not provided, setting default:", default_due_date)
         
-        print("Validated Data (after due_date check):", serializer.validated_data) #<--- Print statement 6
+        print("Validated Data (after due_date check):", serializer.validated_data)
 
         serializer.validated_data['teacher'] = request.user
-        print("Validated Data (after teacher set):", serializer.validated_data) #<--- Print statement 7
+        print("Validated Data (after teacher set):", serializer.validated_data)
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        print("Quiz Created Successfully") #<--- Print statement 8
+        print("Quiz Created Successfully")
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        print("Performing Create (before save):", serializer.validated_data) #<--- Print statement 9
+        print("Performing Create (before save):", serializer.validated_data)
         serializer.save()
-        print("Quiz Saved") #<--- Print statement 10
+        print("Quiz Saved") 
+
+
+class QuizUpdateView(generics.RetrieveUpdateAPIView):  
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer
+    permission_classes = [IsTeacher]
+
+    def check_object_permissions(self, request, obj):
+        """
+        Override to ensure only the quiz creator can update.
+        """
+        if obj.teacher != request.user:
+            self.permission_denied(request, message="You do not have permission to update this quiz.")
+        return super().check_object_permissions(request, obj)
+
+    def perform_update(self, serializer):
+        serializer.save()
