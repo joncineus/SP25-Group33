@@ -6,6 +6,9 @@ venv/
 *.pyc
 __pycache__/
 *.pyo
-
 # Ignore SQLite database
 db.sqlite3 
+# Ignore obj and bin folders (Visual Studio build artifacts)
+/obj/
+/bin/
+*.cache
