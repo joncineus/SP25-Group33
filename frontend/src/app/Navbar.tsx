@@ -30,6 +30,7 @@ const Navbar = () => {
         <Link href="/login" className="hover:underline">Login</Link>
         <Link href="/teacher-dashboard" className="hover:underline">Teacher Dashboard</Link>
         <Link href="/student-dashboard" className="hover:underline">Student Dashboard</Link>
+        <Link href="/quiz-creation" className="hover:underline">Make a Quiz</Link>
       </div>
     </nav>
   );
