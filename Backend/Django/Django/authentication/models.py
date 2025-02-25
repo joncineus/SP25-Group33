@@ -32,18 +32,22 @@ User = get_user_model()
 class Quiz(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)  # Title cannot be blank
     description = models.TextField(blank=True, null=True)  # Description is optional
-    due_date = models.DateTimeField(blank=False, null=False)  # Due date cannot be blank
+    subject = models.CharField(max_length=100, blank=True, null=True)  # Add subject field
+    difficulty_level = models.CharField(
+        max_length=10,
+        choices=[("easy", "Easy"), ("medium", "Medium"), ("hard", "Hard")],
+        default="medium"
+    )
+    time_limit = models.IntegerField(blank=True, null=True, help_text="Time limit in minutes")
+    created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
+    due_date = models.DateTimeField()
     is_published = models.BooleanField(default=False)  # Default to unpublished
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
 
     def clean(self):
         # Custom validation: Ensure title and due_date are not blank
-        if not self.title:
-            raise ValidationError({"title": "Title cannot be blank."})
-        if not self.due_date:
-            raise ValidationError({"due_date": "Due date cannot be blank."})
-        if self.due_date < timezone.now():
-            raise ValidationError({"due_date": "Due date cannot be in the past."})
+     if not self.title:  
+        raise ValidationError({"title": "Title cannot be blank."})
 
     def __str__(self):
         return self.title  # String representation of the Quiz model
