@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from pickle import FALSE
 import posixpath
 from datetime import timedelta   #for JWT
 
@@ -27,7 +28,7 @@ SECRET_KEY = 'ff21e3f5-a728-482a-ac77-49702e9c876a'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+APPEND_SLASH = False
 # Application references
 # https://docs.djangoproject.com/en/2.1/ref/settings/#std:setting-INSTALLED_APPS
 INSTALLED_APPS = [
