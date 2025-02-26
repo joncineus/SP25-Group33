@@ -37,7 +37,7 @@ const Register = () => {
   const onSubmit = async (data: RegistrationData) => {
     console.log("Data being sent:", data);
 
-    const response = await axios.post("http://127.0.0.1:8000/auth/register/", data, {
+    const response = await axios.post("http://localhost:8000/auth/register/", data, {
       headers: {
           'Content-Type': 'application/json'
       }

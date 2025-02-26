@@ -28,7 +28,7 @@ const Register = () => {
 
   const onSubmit = async (data: RegistrationData) => {
     try {
-      const response = await axios.post("https://your-api.com/register", data);
+        const response = await axios.post("http://localhost:8000/auth/register/", data);
       setMessage("Registration successful!");
       console.log(response.data);
     } catch (error) {
