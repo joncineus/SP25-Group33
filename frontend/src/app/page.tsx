@@ -1,3 +1,32 @@
+
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <h1 className="text-3xl font-bold">Welcome to My App</h1>
+      <p className="text-gray-600 mt-2">Click below to create an account or log in.</p>
+      
+      {/* Button to go to Register Page */}
+      <Link href="/register">
+        <button className="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          Sign Up
+        </button>
+      </Link>
+
+      {/* Button to go to Login Page */}
+      <Link href="/login">
+        <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Login
+        </button>
+      </Link>
+    </div>
+  );
+}
+
+
+/* *** THE FOLLOWING CODE IS THE ORIGINAL CODE FROM THE TEMPLATE *** 
+
 import Image from "next/image";
 
 export default function Home() {
@@ -99,3 +128,4 @@ export default function Home() {
     </div>
   );
 }
+*/
