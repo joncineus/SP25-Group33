@@ -16,7 +16,7 @@ const Dashboard = () => {
     } else {
       router.push('/login');
     }
-  }, []); // Correct dependency array
+  }, [router]); // Correct dependency array
 
   if (!userRole) {
     return <div>Loading...</div>;

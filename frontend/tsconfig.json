@@ -25,9 +25,8 @@
       "node",
       "react",
       "react-dom",
-      "@types/react-hook-form",
-      "@types/zod",
-      "@types/axios"
+      
+      
     ]
   }, 
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
