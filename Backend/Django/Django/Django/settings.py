@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'authentication',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 # this configuration enables JWT Authentication
@@ -63,6 +64,7 @@ SIMPLE_JWT = {
 # https://docs.djangoproject.com/en/2.1/topics/http/middleware/
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -134,3 +136,7 @@ STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
 
 #custom user model
 AUTH_USER_MODEL = 'authentication.CustomUser'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Allow requests from your frontend during development
+]
