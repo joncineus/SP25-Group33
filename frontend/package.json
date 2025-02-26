@@ -21,6 +21,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/jwt-decode": "^2.2.1",
+    "@types/next": "^8.0.7",
     "@types/node": "20.17.19",
     "@types/react": "^19",
     "@types/react-dom": "^19",

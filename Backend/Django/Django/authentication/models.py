@@ -19,7 +19,7 @@ class CustomUser(AbstractUser):
 
     # Custom field to specify whether the user is a teacher or student.
     # This field will be used for role-based functionality in the platform.
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')  
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')  
 
     # String representation of the user (used for debugging, reccommended by gpt)
     def __str__(self):

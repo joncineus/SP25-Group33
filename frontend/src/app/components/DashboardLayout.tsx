@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/app/Navbar';  // Correct import path
+import { getAccessToken } from "../../utils/authService";
 
 interface Props {
   children: React.ReactNode;
@@ -13,11 +14,12 @@ const DashboardLayout = ({ children }: Props) => {
   const router = useRouter();
 
   useEffect(() => {
+    const token = getAccessToken();
     const storedRole = localStorage.getItem('userRole');
-    if (storedRole) {
+    if (token && storedRole) {
       setUserRole(storedRole);
     } else {
-      router.push('/login');
+      router.push("/login"); // Redirect to login if no token or role
     }
   }, [router]); // Add router to the dependency array
 

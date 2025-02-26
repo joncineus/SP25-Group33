@@ -12,10 +12,13 @@ from .serializers import QuizSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
 from django.utils import timezone  
-
-
+from .serializers import CustomTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Create your views here.
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer  #  Ensure custom serializer is used
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -104,3 +107,5 @@ class QuizUpdateView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save()
+        
+        

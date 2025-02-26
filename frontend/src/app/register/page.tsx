@@ -37,7 +37,7 @@ const Register = () => {
   const onSubmit = async (data: RegistrationData) => {
     console.log("Data being sent:", data);
 
-    const response = await axios.post("http://127.0.0.1:8000/auth/register/", data, {
+    const response = await axios.post("http://127.0.0.1:8000/register/", data, {
       headers: {
           'Content-Type': 'application/json'
       }
@@ -107,7 +107,7 @@ const Register = () => {
         placeholder=" First Name" 
         className = "w-full max-w-lg px-4 py-2 border rounded-lg text-gray-700 text-center bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        {errors.firstName && <p>{errors.firstName.message}</p>}
+        {errors.firstName && <p className= "text-white">{errors.firstName.message}</p>}
   
 
         <input {...register("lastName")} 
@@ -115,28 +115,28 @@ const Register = () => {
         className = "w-full max-w-lg px-4 py-2 border rounded-lg text-gray-700 text-center bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"        
         />
 
-        {errors.lastName && <p>{errors.lastName.message}</p>}
+        {errors.lastName && <p className= "text-white">{errors.lastName.message}</p>}
   
 
         <input {...register("username")} 
         placeholder="Username" 
         className = "w-full max-w-lg px-4 py-2 border rounded-lg text-gray-700 text-center bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        {errors.username && <p>{errors.username.message}</p>}
+        {errors.username && <p className= "text-white">{errors.username.message}</p>}
   
 
         <input {...register("email")} 
         placeholder="Email" 
         className = "w-full max-w-lg px-4 py-2 border rounded-lg text-gray-700 text-center bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"        
         />
-        {errors.email && <p>{errors.email.message}</p>}
+        {errors.email && <p className= "text-white">{errors.email.message}</p>}
   
 
         <input type="password" {...register("password")} 
         placeholder=" Password" 
         className = "w-full max-w-lg px-4 py-2 border rounded-lg text-gray-700 text-center bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"        
         />
-        {errors.password && <p>{errors.password.message}</p>}
+        {errors.password && <p className= "text-white">{errors.password.message}</p>}
   
 
         <h2 className="text-1xl text-center font-bold mb-4 text-white">Select Role</h2>
@@ -148,7 +148,7 @@ const Register = () => {
           <option value="teacher">Teacher</option>
           <option value="student">Student</option>
         </select>
-        {errors.role && <p>{errors.role.message}</p>}
+        {errors.role && <p className= "text-white">{errors.role.message}</p>}
   
         <button 
             type="submit"
