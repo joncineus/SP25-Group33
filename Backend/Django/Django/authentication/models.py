@@ -26,8 +26,6 @@ class CustomUser(AbstractUser):
         return f"{self.username} ({self.role})"
 
 
-# Get the custom user model
-User = get_user_model()
 
 class Quiz(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)  # Title cannot be blank
@@ -42,12 +40,12 @@ class Quiz(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
     due_date = models.DateTimeField()
     is_published = models.BooleanField(default=False)  # Default to unpublished
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
+    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
 
     def clean(self):
         # Custom validation: Ensure title and due_date are not blank
-     if not self.title:  
-        raise ValidationError({"title": "Title cannot be blank."})
+        if not self.title:  
+            raise ValidationError({"title": "Title cannot be blank."})
 
     def __str__(self):
         return self.title  # String representation of the Quiz model
