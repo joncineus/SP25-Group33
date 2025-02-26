@@ -127,3 +127,30 @@ class QuizDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.delete()
+
+
+class TeacherQuizListView(generics.ListAPIView):
+    serializer_class = QuizSerializer
+    permission_classes = [IsTeacher]
+
+    def get_queryset(self):
+        """
+        Override to filter quizzes by the logged-in teacher.
+        """
+        teacher = self.request.user
+        queryset = Quiz.objects.filter(teacher=teacher)
+
+        # Optional filters
+        is_published = self.request.query_params.get('is_published')
+        if is_published is not None:
+            queryset = queryset.filter(is_published=is_published)
+
+        due_date = self.request.query_params.get('due_date') #example: due_date=2024-12-31
+        if due_date is not None:
+            queryset = queryset.filter(due_date__lte=due_date) # Quizzes due by or before that date
+
+        return queryset
+
+    filter_backends = [filters.OrderingFilter] # To enable ordering
+    ordering_fields = ['due_date', 'title', 'created_at'] # Fields you can order by
+    ordering = ['due_date'] # Default ordering
