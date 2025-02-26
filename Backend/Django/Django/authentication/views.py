@@ -8,15 +8,48 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework import generics, permissions
 from .models import Quiz
-from .serializers import QuizSerializer
+from .serializers import QuizSerializer, UserRegistrationSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
 from django.utils import timezone
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, filters 
+from datetime import datetime 
 
 
 
-# Create your views here.
+class TeacherQuizListView(generics.ListAPIView):
+    serializer_class = QuizSerializer
+    permission_classes = [IsTeacher]
+
+  
+    def get_queryset(self):
+        teacher = self.request.user
+        queryset = Quiz.objects.filter(teacher=teacher)
+
+        is_published_str = self.request.query_params.get('is_published')
+        if is_published_str is not None:
+            try:
+                is_published = bool(is_published_str.lower() == 'true')
+                queryset = queryset.filter(is_published=is_published)
+            except ValueError:
+                return Response({"error": "Invalid value for is_published"}, status=status.HTTP_400_BAD_REQUEST)
+
+    
+        due_date_str = self.request.query_params.get('due_date')
+        if due_date_str is not None:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()  # Convert to date object
+                queryset = queryset.filter(due_date__lte=due_date)
+            except ValueError:
+                return Response({"error": "Invalid date format for due_date. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return queryset
+
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['due_date', 'title', 'created_at']
+    ordering = ['due_date']
+
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -41,11 +74,9 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         
         if user is not None:
-            # Use the function to generate tokens
             tokens = get_tokens_for_user(user)
             return Response(tokens, status=status.HTTP_200_OK)
         
-        # Return error if authentication fails
         return Response({
             "detail": "Invalid credentials"
         }, status=status.HTTP_401_UNAUTHORIZED)
@@ -66,7 +97,7 @@ class QuizCreateView(generics.CreateAPIView):
         print("Serializer Data:", serializer.initial_data) 
         serializer.is_valid(raise_exception=True)
 
-        print("Validated Data (before due_date check):", serializer.validated_data) #<--- Print statement 4
+        print("Validated Data (before due_date check):", serializer.validated_data) 
 
         if 'due_date' not in serializer.validated_data or not serializer.validated_data['due_date']:
             default_due_date = timezone.now() + timezone.timedelta(days=7)
@@ -120,37 +151,12 @@ class QuizDeleteView(generics.RetrieveUpdateDestroyAPIView):
         return super().check_object_permissions(request, obj)
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object() # get the object
+        instance = self.get_object() 
         self.check_object_permissions(request, instance) 
-        self.perform_destroy(instance) # delete the object
+        self.perform_destroy(instance) 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_destroy(self, instance):
         instance.delete()
 
 
-class TeacherQuizListView(generics.ListAPIView):
-    serializer_class = QuizSerializer
-    permission_classes = [IsTeacher]
-
-    def get_queryset(self):
-        """
-        Override to filter quizzes by the logged-in teacher.
-        """
-        teacher = self.request.user
-        queryset = Quiz.objects.filter(teacher=teacher)
-
-        # Optional filters
-        is_published = self.request.query_params.get('is_published')
-        if is_published is not None:
-            queryset = queryset.filter(is_published=is_published)
-
-        due_date = self.request.query_params.get('due_date') #example: due_date=2024-12-31
-        if due_date is not None:
-            queryset = queryset.filter(due_date__lte=due_date) # Quizzes due by or before that date
-
-        return queryset
-
-    filter_backends = [filters.OrderingFilter] # To enable ordering
-    ordering_fields = ['due_date', 'title', 'created_at'] # Fields you can order by
-    ordering = ['due_date'] # Default ordering
