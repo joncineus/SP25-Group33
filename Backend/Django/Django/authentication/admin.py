@@ -17,9 +17,9 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 
 class QuizAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'due_date', 'is_published', 'teacher')  # Fields to display in the admin list view
-    list_filter = ('is_published', 'due_date')  # Filters for the admin panel
-    search_fields = ('title', 'description')  # Search functionality
+    list_display = ('id', 'title', 'due_date', 'is_published', 'teacher') 
+    list_filter = ('is_published', 'due_date') 
+    search_fields = ('title', 'description')  
 
 # Register the Quiz model
 admin.site.register(Quiz, QuizAdmin)
