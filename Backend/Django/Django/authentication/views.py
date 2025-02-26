@@ -11,7 +11,8 @@ from .models import Quiz
 from .serializers import QuizSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
-from django.utils import timezone  
+from django.utils import timezone
+from rest_framework import generics, permissions, status
 
 
 
@@ -89,7 +90,7 @@ class QuizCreateView(generics.CreateAPIView):
         print("Quiz Saved") 
 
 
-class QuizUpdateView(generics.RetrieveUpdateAPIView):  
+class QuizUpdateView(generics.RetrieveUpdateDestroyAPIView):  
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
     permission_classes = [IsTeacher]
@@ -104,3 +105,25 @@ class QuizUpdateView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save()
+
+class QuizDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer  
+    permission_classes = [IsTeacher]
+
+    def check_object_permissions(self, request, obj):
+        """
+        Override to ensure only the quiz creator can delete.
+        """
+        if obj.teacher != request.user:
+            self.permission_denied(request, message="You do not have permission to delete this quiz.")
+        return super().check_object_permissions(request, obj)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object() # get the object
+        self.check_object_permissions(request, instance) 
+        self.perform_destroy(instance) # delete the object
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
