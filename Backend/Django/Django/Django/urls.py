@@ -21,8 +21,10 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from authentication.views import LoginView  
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('authentication.urls')), 
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  
+    path('auth/', include('authentication.urls')),
+    path('api/', include('quiz.urls')),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # ✅ Correct usage
 ]

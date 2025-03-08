@@ -22,7 +22,6 @@ class CustomUser(AbstractUser):
         return f"{self.username} ({self.role})"
 
 
-
 class Quiz(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False) 
     description = models.TextField(blank=True, null=True)  
@@ -33,24 +32,14 @@ class Quiz(models.Model):
         default="medium"
     )
     time_limit = models.IntegerField(blank=True, null=True, help_text="Time limit in minutes")
-    created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
+    created_at = models.DateTimeField(auto_now_add=True)  
     due_date = models.DateTimeField()
-<<<<<<< HEAD
-    is_published = models.BooleanField(default=False) 
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
+    is_published = models.BooleanField(default=False)  
+    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='authentication_quizzes')  # ✅ Changed related_name
 
     def clean(self):
-     if not self.title:  
-        raise ValidationError({"title": "Title cannot be blank."})
-=======
-    is_published = models.BooleanField(default=False)  # Default to unpublished
-    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
-
-    def clean(self):
-        # Custom validation: Ensure title and due_date are not blank
         if not self.title:  
             raise ValidationError({"title": "Title cannot be blank."})
->>>>>>> origin/main
 
     def __str__(self):
         return self.title  
