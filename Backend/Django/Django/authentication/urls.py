@@ -12,5 +12,7 @@ urlpatterns = [
     path('quizzes/', TeacherQuizListView.as_view(), name='teacher-quiz-list'),
     path('quizzes/create/', QuizCreateView.as_view(), name='quiz-create'),
     path('quizzes/<int:pk>/', QuizUpdateView.as_view(), name='quiz-update'),
+    path('quizzes/available/', AvailableQuizzesListView.as_view(), name='available-quizzes'),
+
 ]
 

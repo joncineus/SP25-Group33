@@ -35,14 +35,6 @@ class Quiz(models.Model):
     time_limit = models.IntegerField(blank=True, null=True, help_text="Time limit in minutes")
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
     due_date = models.DateTimeField()
-<<<<<<< HEAD
-    is_published = models.BooleanField(default=False) 
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
-
-    def clean(self):
-     if not self.title:  
-        raise ValidationError({"title": "Title cannot be blank."})
-=======
     is_published = models.BooleanField(default=False)  # Default to unpublished
     teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
 
@@ -50,7 +42,6 @@ class Quiz(models.Model):
         # Custom validation: Ensure title and due_date are not blank
         if not self.title:  
             raise ValidationError({"title": "Title cannot be blank."})
->>>>>>> origin/main
 
     def __str__(self):
         return self.title  
