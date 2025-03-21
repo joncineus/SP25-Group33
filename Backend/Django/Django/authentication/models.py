@@ -3,6 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 class CustomUser(AbstractUser):
     # Inherits fields like `username`, `password`, `first_name`, `last_name`, `email`, and others from AbstractUser.
@@ -24,6 +25,7 @@ class CustomUser(AbstractUser):
 
 
 class Quiz(models.Model):
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quizzes')
     title = models.CharField(max_length=255, blank=False, null=False) 
     description = models.TextField(blank=True, null=True)  
     subject = models.CharField(max_length=100, blank=True, null=True) 
@@ -35,13 +37,12 @@ class Quiz(models.Model):
     time_limit = models.IntegerField(blank=True, null=True, help_text="Time limit in minutes")
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
     due_date = models.DateTimeField()
-    is_published = models.BooleanField(default=False)  # Default to unpublished
-    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
+    is_published = models.BooleanField(default=False) 
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quizzes')
 
     def clean(self):
-        # Custom validation: Ensure title and due_date are not blank
-        if not self.title:  
-            raise ValidationError({"title": "Title cannot be blank."})
+     if not self.title:  
+        raise ValidationError({"title": "Title cannot be blank."})
 
     def __str__(self):
         return self.title  
