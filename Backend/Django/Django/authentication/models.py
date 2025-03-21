@@ -3,6 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 class CustomUser(AbstractUser):
     # Inherits fields like `username`, `password`, `first_name`, `last_name`, `email`, and others from AbstractUser.
@@ -24,6 +25,7 @@ class CustomUser(AbstractUser):
 
 
 class Quiz(models.Model):
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quizzes')
     title = models.CharField(max_length=255, blank=False, null=False) 
     description = models.TextField(blank=True, null=True)  
     subject = models.CharField(max_length=100, blank=True, null=True) 
@@ -36,7 +38,7 @@ class Quiz(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
     due_date = models.DateTimeField()
     is_published = models.BooleanField(default=False) 
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')  # Foreign key to the User model
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quizzes')
 
     def clean(self):
      if not self.title:  
