@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from .serializers import UserRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from rest_framework import generics, permissions
 from .models import Quiz
 from .serializers import QuizSerializer, UserRegistrationSerializer
 from .permissions import IsTeacher 
@@ -160,3 +159,13 @@ class QuizDeleteView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
 
 
+class AvailableQuizzesListView(generics.ListAPIView):
+    """
+    API endpoint to list all published quizzes that are within their due date.
+    Only authenticated users can access this endpoint.
+    """
+    serializer_class = QuizSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Quiz.objects.filter(is_published=True, due_date__gt=timezone.now())

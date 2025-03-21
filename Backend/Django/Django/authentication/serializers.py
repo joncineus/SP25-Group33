@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from .models import CustomUser 
 from .models import Quiz
+from django.utils import timezone
+
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -23,7 +25,7 @@ class QuizSerializer(serializers.ModelSerializer):
         model = Quiz
         fields = [
             'id', 'title', 'description', 'created_at', 'teacher', 'subject',
-            'difficulty_level', 'time_limit', 'is_published', 'questions'
+            'difficulty_level', 'time_limit', 'is_published', 'questions', 'due_date'
         ]
         
     def validate_due_date(self, value):

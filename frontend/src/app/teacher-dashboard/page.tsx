@@ -1,8 +1,9 @@
 "use client";
 
 import DashboardLayout from '@/app/components/DashboardLayout';
+import React from 'react';
 
-const TeacherDashboard = () => {
+const TeacherDashboard: React.FC = () => {
   return (
     <DashboardLayout>
       <div>
