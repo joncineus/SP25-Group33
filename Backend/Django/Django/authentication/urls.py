@@ -4,6 +4,8 @@ from .views import LoginView
 from .views import QuizCreateView
 from .views import QuizUpdateView
 from authentication.views import TeacherQuizListView
+from authentication.views import AvailableQuizzesListView
+
 
 
 urlpatterns = [

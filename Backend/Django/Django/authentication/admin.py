@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
 from .models import Quiz
+from .models import QuizResponse
+
+
 
 # Extend the default UserAdmin to include the custom fields like `role`
 class CustomUserAdmin(UserAdmin):
@@ -23,3 +26,5 @@ class QuizAdmin(admin.ModelAdmin):
 
 # Register the Quiz model
 admin.site.register(Quiz, QuizAdmin)
+
+admin.site.register(QuizResponse)

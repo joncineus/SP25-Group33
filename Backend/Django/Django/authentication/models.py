@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
+
 class CustomUser(AbstractUser):
     # Inherits fields like `username`, `password`, `first_name`, `last_name`, `email`, and others from AbstractUser.
 
@@ -38,7 +39,6 @@ class Quiz(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp
     due_date = models.DateTimeField()
     is_published = models.BooleanField(default=False) 
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quizzes')
 
     def clean(self):
      if not self.title:  
@@ -46,3 +46,13 @@ class Quiz(models.Model):
 
     def __str__(self):
         return self.title  
+
+class QuizResponse(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="quiz_responses")
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="responses")
+    answers = models.JSONField()  # Stores student's answers as a JSON object
+    score = models.IntegerField(default=0)  # Calculated score, default 0
+    submitted_at = models.DateTimeField(auto_now_add=True)  # Timestamp when submitted
+
+    def __str__(self):
+        return f"{self.student.username} - {self.quiz.title}"
