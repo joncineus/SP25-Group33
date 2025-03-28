@@ -49,9 +49,17 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        
     ],
-    'AUTH_HEADER_TYPES': ('Bearer',),
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Secure by default
+    ],
+   
 }
+
+    
+
 
 # JWT Configuration
 SIMPLE_JWT = {
