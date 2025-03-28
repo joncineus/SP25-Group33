@@ -8,13 +8,15 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import Quiz
-from .serializers import QuizSerializer, UserRegistrationSerializer, QuizResponseSerializer,  QuizCreateSerializer
+from .serializers import QuizSerializer, UserRegistrationSerializer, QuizResponseSerializer,  QuizCreateSerializer, QuizResponseListSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
 from django.utils import timezone
 from rest_framework import generics, permissions, filters 
 from datetime import datetime 
 from .models import QuizResponse
+from rest_framework import serializers
+
 
 
 
@@ -190,3 +192,10 @@ class QuizSubmitView(CreateAPIView):
                 {"error": "Quiz not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+class StudentQuizResultsView(generics.ListAPIView):
+    serializer_class = QuizResponseListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return QuizResponse.objects.filter(student=self.request.user).order_by('-submitted_at')
