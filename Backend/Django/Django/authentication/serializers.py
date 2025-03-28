@@ -169,3 +169,11 @@ class QuizResponseSerializer(serializers.ModelSerializer):
             answers=answers,
             score=score
         )
+
+class QuizResponseListSerializer(serializers.ModelSerializer):
+    quiz_title = serializers.CharField(source='quiz.title', read_only=True)
+    submission_date = serializers.DateTimeField(source='created_at', read_only=True)
+
+    class Meta:
+        model = QuizResponse
+        fields = ['quiz_title', 'score', 'submission_date']
