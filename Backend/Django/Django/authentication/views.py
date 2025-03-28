@@ -1,18 +1,20 @@
+from rest_framework.generics import CreateAPIView 
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from django.http import HttpResponse
 from rest_framework.views import APIView
-from .serializers import UserRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import Quiz
-from .serializers import QuizSerializer, UserRegistrationSerializer
+from .serializers import QuizSerializer, UserRegistrationSerializer, QuizResponseSerializer,  QuizCreateSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
 from django.utils import timezone
 from rest_framework import generics, permissions, filters 
 from datetime import datetime 
+from .models import QuizResponse
 
 
 
@@ -50,6 +52,7 @@ class TeacherQuizListView(generics.ListAPIView):
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -58,7 +61,11 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class LoginView(APIView):
+
+    permission_classes = [AllowAny]  # This is crucial
+
     def post(self, request):
         # Extract username and password from request
         username = request.data.get("username")
@@ -82,42 +89,19 @@ class LoginView(APIView):
 
 
 class QuizCreateView(generics.CreateAPIView):
-    """
-    API endpoint for teachers to create quizzes.
-    """
-    serializer_class = QuizSerializer
-    permission_classes = [IsTeacher]
+    serializer_class = QuizCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        print("Starting Quiz Create View") 
-        print("Request Data:", request.data) 
-
         serializer = self.get_serializer(data=request.data)
-        print("Serializer Data:", serializer.initial_data) 
         serializer.is_valid(raise_exception=True)
-
-        print("Validated Data (before due_date check):", serializer.validated_data) 
-
-        if 'due_date' not in serializer.validated_data or not serializer.validated_data['due_date']:
-            default_due_date = timezone.now() + timezone.timedelta(days=7)
-            serializer.validated_data['due_date'] = default_due_date
-            print("Due Date not provided, setting default:", default_due_date)
         
-        print("Validated Data (after due_date check):", serializer.validated_data)
-
-        serializer.validated_data['teacher'] = request.user
-        print("Validated Data (after teacher set):", serializer.validated_data)
-
+        if 'due_date' not in serializer.validated_data:
+            serializer.validated_data['due_date'] = timezone.now() + timezone.timedelta(days=7)
+        
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-
-        print("Quiz Created Successfully")
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def perform_create(self, serializer):
-        print("Performing Create (before save):", serializer.validated_data)
-        serializer.save()
-        print("Quiz Saved") 
 
 
 class QuizUpdateView(generics.RetrieveUpdateDestroyAPIView):  
@@ -169,3 +153,40 @@ class AvailableQuizzesListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Quiz.objects.filter(is_published=True, due_date__gt=timezone.now())
+
+
+class QuizSubmitView(CreateAPIView):
+    serializer_class = QuizResponseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        quiz_id = kwargs.get('quiz_id')
+        try:
+            quiz = Quiz.objects.get(id=quiz_id)
+            
+            # Check for existing submission
+            if QuizResponse.objects.filter(student=request.user, quiz=quiz).exists():
+                return Response(
+                    {"error": "You've already submitted this quiz"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Verify all questions are answered
+            questions = quiz.questions.all()
+            submitted_questions = set(request.data.get('answers', {}).keys())
+            required_questions = {str(q.id) for q in questions}
+            
+            if submitted_questions != required_questions:
+                return Response(
+                    {"error": f"Please answer all {len(required_questions)} questions"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            request.data['quiz'] = quiz.id
+            return super().create(request, *args, **kwargs)
+            
+        except Quiz.DoesNotExist:
+            return Response(
+                {"error": "Quiz not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
