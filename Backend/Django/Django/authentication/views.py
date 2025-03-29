@@ -16,6 +16,10 @@ from rest_framework import generics, permissions, filters
 from datetime import datetime 
 from .models import QuizResponse
 from rest_framework import serializers
+from authentication.models import CustomUser
+from django.db.models import Q
+
+
 
 
 
@@ -230,3 +234,43 @@ class StudentPerformanceTrendView(generics.GenericAPIView):
 
         # Return the serialized data as the response
         return Response(serializer.data)
+
+
+
+class TeacherStudentQuizPerformanceView(APIView):
+    permission_classes = [IsTeacher]
+
+    def get(self, request, quiz_id, last_name):
+        try:
+            # Ensure that the quiz exists
+            quiz = Quiz.objects.get(id=quiz_id)
+
+            # Check if the current user is the teacher of the quiz
+            if quiz.teacher != request.user:
+                return Response({
+                    "detail": "You do not have permission to view this quiz's student's performance."
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Get the student by their last name (you can also match first name if necessary)
+            students = CustomUser.objects.filter(last_name=last_name)
+            
+            if students.count() != 1:
+                # If no student or multiple students are found with that last name, handle the error
+                return Response({"error": "Student not found or multiple students with the same last name"}, status=status.HTTP_404_NOT_FOUND)
+            
+            student = students.first()  # If there’s exactly one student with the last name
+            
+            # Get the quiz response for the specific student
+            response = QuizResponse.objects.get(quiz=quiz, student=student)
+
+            # Serialize the response (this will include the student's score and answers)
+            serializer = QuizResponseSerializer(response)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Quiz.DoesNotExist:
+            return Response({"error": "Quiz not found"}, status=status.HTTP_404_NOT_FOUND)
+        except CustomUser.DoesNotExist:  # Handle CustomUser exception
+            return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+        except QuizResponse.DoesNotExist:
+            return Response({"error": "Student has not submitted a response for this quiz"}, status=status.HTTP_404_NOT_FOUND)
