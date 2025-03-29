@@ -2,7 +2,7 @@ from django.urls import path
 from .views import RegisterView
 from .views import LoginView
 from .views import QuizCreateView
-from .views import QuizUpdateView, QuizDeleteView,  QuizSubmitView,  StudentQuizResultsView
+from .views import QuizUpdateView, QuizDeleteView,  QuizSubmitView,  StudentQuizResultsView, StudentPerformanceTrendView
 from authentication.views import TeacherQuizListView
 from authentication.views import AvailableQuizzesListView
 
@@ -17,6 +17,8 @@ urlpatterns = [
     path('quizzes/available/', AvailableQuizzesListView.as_view(), name='available-quizzes'),
     path('quizzes/<int:quiz_id>/submit/', QuizSubmitView.as_view(), name='quiz-submit'),
     path('students/me/quiz-results/', StudentQuizResultsView.as_view(), name='student-quiz-results'),
+    path('students/me/performance/', StudentPerformanceTrendView.as_view(), name='student-performance-trend'),
+
 
 
 ]

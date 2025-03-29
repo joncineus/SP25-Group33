@@ -177,3 +177,9 @@ class QuizResponseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizResponse
         fields = ['quiz_title', 'score', 'submission_date']
+
+
+
+class PerformanceTrendSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    score = serializers.IntegerField()

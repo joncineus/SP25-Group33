@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import Quiz
-from .serializers import QuizSerializer, UserRegistrationSerializer, QuizResponseSerializer,  QuizCreateSerializer, QuizResponseListSerializer
+from .serializers import QuizSerializer, UserRegistrationSerializer, QuizResponseSerializer,  QuizCreateSerializer, QuizResponseListSerializer, PerformanceTrendSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
 from django.utils import timezone
@@ -199,3 +199,34 @@ class StudentQuizResultsView(generics.ListAPIView):
 
     def get_queryset(self):
         return QuizResponse.objects.filter(student=self.request.user).order_by('-submitted_at')
+
+
+class StudentPerformanceTrendView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # Get the logged-in student (user)
+        student = request.user
+        
+        # Define the time range for the data (e.g., last month or all-time)
+        period = self.request.query_params.get('period', 'all_time')  # Default to all_time
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=30) if period == 'last_month' else None
+        
+        # Query the QuizResponse model for the logged-in student's scores
+        queryset = QuizResponse.objects.filter(student=student)
+        
+        if start_date:
+            queryset = queryset.filter(submitted_at__gte=start_date)
+            
+        # Get the data: ordered by the submission date
+        performance_data = queryset.values('submitted_at', 'score').order_by('submitted_at')
+
+        # Format the data into a list of dictionaries
+        trend_data = [{"date": response['submitted_at'].date(), "score": response['score']} for response in performance_data]
+
+        # Serialize the data using the PerformanceTrendSerializer
+        serializer = PerformanceTrendSerializer(trend_data, many=True)
+
+        # Return the serialized data as the response
+        return Response(serializer.data)
