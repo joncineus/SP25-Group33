@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView 
+from rest_framework.generics import CreateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import render
 from rest_framework import status
@@ -7,17 +7,19 @@ from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import Quiz
 from .serializers import QuizSerializer, UserRegistrationSerializer, QuizResponseSerializer,  QuizCreateSerializer, QuizResponseListSerializer, PerformanceTrendSerializer
 from .permissions import IsTeacher 
 from .utils import get_tokens_for_user
 from django.utils import timezone
 from rest_framework import generics, permissions, filters 
 from datetime import datetime 
-from .models import QuizResponse
+from .models import Quiz, Question, QuizResponse  
 from rest_framework import serializers
 from authentication.models import CustomUser
 from django.db.models import Q
+from django.db.models import Avg
+from collections import defaultdict 
+
 
 
 
@@ -274,3 +276,76 @@ class TeacherStudentQuizPerformanceView(APIView):
             return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
         except QuizResponse.DoesNotExist:
             return Response({"error": "Student has not submitted a response for this quiz"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class QuizPerformanceView(RetrieveAPIView):
+    serializer_class = QuizSerializer
+    permission_classes = [IsAuthenticated, IsTeacher]
+    queryset = Quiz.objects.all()
+    lookup_url_kwarg = 'quiz_id'
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            quiz = self.get_object()
+        except Quiz.DoesNotExist:
+            return Response({"error": "Quiz not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Authorization check: Ensure the requesting user is the teacher of the quiz
+        if quiz.teacher != request.user:
+            return Response({"error": "You are not authorized to view the performance of this quiz."}, status=status.HTTP_403_FORBIDDEN)
+
+        responses = QuizResponse.objects.filter(quiz=quiz)
+        num_responses = responses.count()
+
+        if num_responses == 0:
+            return Response({
+                "average_score": 0,
+                "total_submissions": 0,
+                "commonly_missed_questions": {}
+            })
+
+        average_score = responses.aggregate(Avg('score'))['score__avg']
+
+        # Identify commonly missed questions
+        missed_counts = defaultdict(int)
+        total_counts = {}
+        questions = Question.objects.filter(quiz=quiz)
+        for question in questions:
+            total_counts[str(question.id)] = 0
+
+        for response in responses:
+            student_answers = response.answers
+            for question in questions:
+                question_id = str(question.id)
+                total_counts[question_id] += 1
+                student_answer = student_answers.get(question_id)
+                if student_answer is not None:
+                    is_correct = False
+                    if question.question_type == 'MC':
+                        if student_answer == question.correct_answer_mc:
+                            is_correct = True
+                    elif question.question_type == 'WR':
+                        if student_answer.strip().lower() == question.correct_answer_written.strip().lower():
+                            is_correct = True
+
+                    if not is_correct:
+                        missed_counts[question_id] += 1
+
+        commonly_missed_questions = {}
+        for question_id, missed_count in missed_counts.items():
+            if question_id in total_counts and total_counts[question_id] > 0:
+                missed_percentage = (missed_count / total_counts[question_id]) * 100
+                if missed_percentage > 0: # Only include questions that were actually attempted and missed
+                    try:
+                        question_text = Question.objects.get(id=question_id, quiz=quiz).question_text
+                        commonly_missed_questions[question_text] = f"{missed_percentage:.2f}% missed"
+                    except Question.DoesNotExist:
+                        commonly_missed_questions[f"Question ID {question_id}"] = f"{missed_percentage:.2f}% missed"
+
+        performance_data = {
+            "average_score": average_score if average_score is not None else 0,
+            "total_submissions": num_responses,
+            "commonly_missed_questions": dict(sorted(commonly_missed_questions.items(), key=lambda item: item[1], reverse=True)), # Sort by percentage missed
+        }
+
+        return Response(performance_data, status=status.HTTP_200_OK)
